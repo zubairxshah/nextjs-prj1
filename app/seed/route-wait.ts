@@ -3,7 +3,18 @@ import { db } from '@vercel/postgres';
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 import { createClient } from '@vercel/postgres';
 
+// const connectionString = process.env.POSTGRES_URL;
+
+// if (!connectionString) {
+//   throw new Error('Missing DATABASE_URL environment variable');
+// }
+
+// const client = createClient({ connectionString });
+
+// client.connect();
+
 const client = await db.connect();
+
 async function seedUsers() {
   await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
   await client.sql`
@@ -99,10 +110,14 @@ async function seedRevenue() {
   );
 
   return insertedRevenue;
-}
+ }
 
 export async function GET() {
-  try {
+  return Response.json({
+    message:
+      'Uncomment this file and remove this line. You can delete this file when you are finished.',
+  });
+try {
     await client.sql`BEGIN`;
     await seedUsers();
     await seedCustomers();
@@ -110,9 +125,9 @@ export async function GET() {
     await seedRevenue();
     await client.sql`COMMIT`;
 
-    return new Response(JSON.stringify({ message: 'Database seeded successfully' }), { status: 200 });
-  } catch (error:any) {
+    return Response.json({ message: 'Database seeded successfully' });
+  } catch (error) {
     await client.sql`ROLLBACK`;
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return Response.json({ error }, { status: 500 });
   }
 }
